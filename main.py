@@ -207,8 +207,8 @@ def collidechk(obj1,obj2):
     return False
 
 def paused():
-    global pause
-    text = pygame.font.SysFont(None, 48)
+    global pause, pause_time, gametime
+    text = pygame.font.SysFont(None, 24)
     text_img = text.render('Game paused', True, "WHITE")
     game.screen.blit(text_img, (game.windowWidth/2 - 50, game.windowHeight/2 - 10))
     display.flip()
@@ -220,9 +220,12 @@ def paused():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    pause_time = int(pygame.time.get_ticks()/1000) - menu_time - gametime
                     pause = False
 
 def gameloop():
+    global pause_time, gametime
+    pause_time = 0
     global pause
     pause = False
     once = 0
@@ -256,17 +259,20 @@ def gameloop():
         player.collidehdl()
         player.update()
 
+        gametime = int(pygame.time.get_ticks()/1000) - menu_time - pause_time
+
         font = pygame.font.SysFont(None, 24)
         rad_text = "Radiation: " + str(round(player.radiation, 1)) + "%"
         img = font.render(rad_text, True, "WHITE")
-        time_text = "Time: " + str(int(pygame.time.get_ticks()/1000))
+        time_text = "Time: " + str(gametime)
         time_font = pygame.font.SysFont(None, 24)
         time_img = time_font.render(time_text, True, "WHITE")
 
-        if int(pygame.time.get_ticks()/1000)%10 == 0 and once == 0:
+        #gametime = int(pygame.time.get_ticks()/1000) - menu_time
+        if gametime%10 == 0 and once == 0:
             place_food()
             once = 1
-        elif int(pygame.time.get_ticks()/1000)%10 != 0:
+        elif gametime%10 != 0:
             once = 0
 
         # Update frame
@@ -295,6 +301,7 @@ def gameloop():
     quit()
 
 def start_menu():
+    global menu_time
     intro = True
     menu = display.set_mode([800, 800])
     menu.fill((0,0,0,128))
@@ -311,6 +318,7 @@ def start_menu():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if start.collidepoint(pygame.mouse.get_pos()):
+                    menu_time = int(pygame.time.get_ticks()/1000)
                     gameloop()
 
 if __name__ == "__main__":
